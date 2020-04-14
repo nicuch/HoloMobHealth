@@ -1,8 +1,7 @@
 package com.loohp.holomobhealth.Utils;
 
-import org.bukkit.entity.Entity;
-
 import net.citizensnpcs.api.CitizensAPI;
+import org.bukkit.entity.Entity;
 
 public class CitizensUtils {
 

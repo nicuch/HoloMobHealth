@@ -1,27 +1,5 @@
 package com.loohp.holomobhealth;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.loohp.holomobhealth.Debug.Debug;
@@ -32,8 +10,19 @@ import com.loohp.holomobhealth.Utils.CitizensUtils;
 import com.loohp.holomobhealth.Utils.EntityTypeUtils;
 import com.loohp.holomobhealth.Utils.MetadataPacket;
 import com.loohp.holomobhealth.Utils.MythicMobsUtils;
-
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 public class HoloMobHealth extends JavaPlugin {
 
@@ -64,17 +53,17 @@ public class HoloMobHealth extends JavaPlugin {
     public static String ReloadPlugin = "&aHoloMobHealth has been reloaded!";
     public static String NoPermission = "&cYou do not have permission to use that command!";
 
-    public static Set<Entity> nearbyEntities = new HashSet<Entity>();
-    public static Set<Entity> nearbyPlus10Entities = new HashSet<Entity>();
+    public static Set<Entity> nearbyEntities = new HashSet<>();
+    public static Set<Entity> nearbyPlus10Entities = new HashSet<>();
 
-    public static List<EntityType> DisabledMobTypes = new ArrayList<EntityType>();
-    public static List<String> DisabledMobNamesAbsolute = new ArrayList<String>();
-    public static List<String> DisabledMobNamesContains = new ArrayList<String>();
+    public static List<EntityType> DisabledMobTypes = new ArrayList<>();
+    public static List<String> DisabledMobNamesAbsolute = new ArrayList<>();
+    public static List<String> DisabledMobNamesContains = new ArrayList<>();
 
     public static boolean UseAlterHealth = false;
     public static int AltHealthDisplayTime = 3;
     public static boolean AltOnlyPlayer = false;
-    public static HashMap<Entity, Long> altShowHealth = new HashMap<Entity, Long>();
+    public static Map<Entity, Long> altShowHealth = new HashMap<>();
 
     public static boolean MythicHook = false;
     public static boolean showMythicMobs = true;
@@ -87,7 +76,7 @@ public class HoloMobHealth extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        plugin = (Plugin) getServer().getPluginManager().getPlugin("HoloMobHealth");
+        plugin = getServer().getPluginManager().getPlugin("HoloMobHealth");
 
         getServer().getPluginManager().registerEvents(new Debug(), this);
 
@@ -116,29 +105,31 @@ public class HoloMobHealth extends JavaPlugin {
             MythicHook = true;
         }
 
-        if (getServer().getClass().getPackage().getName().contains("1_15_R1") == true) {
+        String packageName = getServer().getClass().getPackage().getName();
+
+        if (packageName.contains("1_15_R1")) {
             version = "1.15";
-        } else if (getServer().getClass().getPackage().getName().contains("1_14_R1") == true) {
+        } else if (packageName.contains("1_14_R1")) {
             version = "1.14";
-        } else if (getServer().getClass().getPackage().getName().contains("1_13_R2") == true) {
+        } else if (packageName.contains("1_13_R2")) {
             version = "1.13.1";
-        } else if (getServer().getClass().getPackage().getName().contains("1_13_R1") == true) {
+        } else if (packageName.contains("1_13_R1")) {
             version = "1.13";
-        } else if (getServer().getClass().getPackage().getName().contains("1_12_R1") == true) {
+        } else if (packageName.contains("1_12_R1")) {
             version = "legacy1.12";
-        } else if (getServer().getClass().getPackage().getName().contains("1_11_R1") == true) {
+        } else if (packageName.contains("1_11_R1")) {
             version = "legacy1.11";
-        } else if (getServer().getClass().getPackage().getName().contains("1_10_R1") == true) {
+        } else if (packageName.contains("1_10_R1")) {
             version = "legacy1.10";
-        } else if (getServer().getClass().getPackage().getName().contains("1_9_R2") == true) {
+        } else if (packageName.contains("1_9_R2")) {
             version = "legacy1.9.4";
-        } else if (getServer().getClass().getPackage().getName().contains("1_9_R1") == true) {
+        } else if (packageName.contains("1_9_R1")) {
             version = "legacy1.9";
-        } else if (getServer().getClass().getPackage().getName().contains("1_8_R3") == true) {
+        } else if (packageName.contains("1_8_R3")) {
             version = "OLDlegacy1.8.4";
-        } else if (getServer().getClass().getPackage().getName().contains("1_8_R2") == true) {
+        } else if (packageName.contains("1_8_R2")) {
             version = "OLDlegacy1.8.3";
-        } else if (getServer().getClass().getPackage().getName().contains("1_8_R1") == true) {
+        } else if (packageName.contains("1_8_R1")) {
             version = "OLDlegacy1.8";
         } else {
             getServer().getConsoleSender().sendMessage(ChatColor.RED + "This version of minecraft is unsupported!");
@@ -151,12 +142,7 @@ public class HoloMobHealth extends JavaPlugin {
         addEntities();
         removeEntities();
 
-        metrics.addCustomChart(new Metrics.SingleLineChart("total_mobs_displaying", new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return HoloMobHealth.nearbyPlus10Entities.size();
-            }
-        }));
+        metrics.addCustomChart(new Metrics.SingleLineChart("total_mobs_displaying", () -> HoloMobHealth.nearbyPlus10Entities.size()));
 
         getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "HoloMobHealth has been Enabled!");
 
@@ -207,7 +193,7 @@ public class HoloMobHealth extends JavaPlugin {
             Bukkit.getScheduler().cancelTask(activeShowHealthTaskID);
         }
 
-        if (HoloMobHealth.UseAlterHealth == false) {
+        if (!HoloMobHealth.UseAlterHealth) {
             sendHealth();
         } else {
             sendAltHealth();
@@ -221,7 +207,7 @@ public class HoloMobHealth extends JavaPlugin {
             Bukkit.getScheduler().cancelTask(UpdaterTaskID);
         }
         HoloMobHealth.UpdaterEnabled = HoloMobHealth.plugin.getConfig().getBoolean("Updater.Enable");
-        if (UpdaterEnabled == true) {
+        if (UpdaterEnabled) {
             Updater.updaterInterval();
         }
     }
@@ -259,7 +245,7 @@ public class HoloMobHealth extends JavaPlugin {
         int next = 2;
         int delay = 1;
         int count = 0;
-        Queue<Entity> allentites = new LinkedList<Entity>();
+        Queue<Entity> allentites = new LinkedList<>();
         for (World world : Bukkit.getWorlds()) {
             for (Entity entity : world.getEntities()) {
                 if (entity instanceof LivingEntity && !(entity instanceof Player)) {
@@ -280,7 +266,7 @@ public class HoloMobHealth extends JavaPlugin {
                     if (rawentity == null) {
                         return;
                     }
-                    if (rawentity.isValid() == false) {
+                    if (!rawentity.isValid()) {
                         return;
                     }
                     LivingEntity entity = (LivingEntity) rawentity;
@@ -295,7 +281,7 @@ public class HoloMobHealth extends JavaPlugin {
             }.runTaskLater(HoloMobHealth.plugin, delay);
         }
         next = next + delay;
-        Bukkit.getScheduler().runTaskLater(HoloMobHealth.plugin, () -> removeEntities(), next);
+        Bukkit.getScheduler().runTaskLater(HoloMobHealth.plugin, HoloMobHealth::removeEntities, next);
     }
 
     public static void sendAltHealth() {
@@ -325,19 +311,19 @@ public class HoloMobHealth extends JavaPlugin {
 
                     new BukkitRunnable() {
                         public void run() {
-                            if (entity.isValid() == false) {
+                            if (!entity.isValid()) {
                                 return;
                             }
 
                             if (HoloMobHealth.DisabledMobTypes.contains(entity.getType())) {
                                 return;
                             }
-                            if (showCitizens == false && CitizensHook == true) {
+                            if (!showCitizens && CitizensHook) {
                                 if (CitizensUtils.isNPC(entity)) {
                                     return;
                                 }
                             }
-                            if (showMythicMobs == false && MythicHook == true) {
+                            if (!showMythicMobs && MythicHook) {
                                 if (MythicMobsUtils.isMythicMob(entity)) {
                                     return;
                                 }
@@ -357,7 +343,7 @@ public class HoloMobHealth extends JavaPlugin {
                                             break;
                                         }
                                     }
-                                    if (contain == true) {
+                                    if (contain) {
                                         return;
                                     }
                                 }
@@ -369,7 +355,7 @@ public class HoloMobHealth extends JavaPlugin {
                                     MetadataPacket.sendMetadataPacket(entity, name, visible);
                                     return;
                                 }
-                                if (HoloMobHealth.applyToNamed == false) {
+                                if (!HoloMobHealth.applyToNamed) {
                                     if (entity.getCustomName() != null) {
                                         if (!entity.getCustomName().equals("")) {
                                             String name = entity.getCustomName();
@@ -379,7 +365,7 @@ public class HoloMobHealth extends JavaPlugin {
                                         }
                                     }
                                 }
-                                String display = "";
+                                String display;
                                 display = HoloMobHealth.DisplayText;
                                 if (display.contains("{Health_Rounded}")) {
                                     long health = Math.round(((LivingEntity) entity).getHealth());
@@ -406,15 +392,15 @@ public class HoloMobHealth extends JavaPlugin {
                                     display = display.replace("{Max_Health_2DB}", String.valueOf(health));
                                 }
                                 if (display.contains("{Health_Percentage}")) {
-                                    long health = Math.round((((LivingEntity) entity).getHealth() / (double) ((LivingEntity) entity).getMaxHealth()) * 100);
+                                    long health = Math.round((((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * 100);
                                     display = display.replace("{Health_Percentage}", String.valueOf(health));
                                 }
                                 if (display.contains("{Health_Percentage_1DB}")) {
-                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / (double) ((LivingEntity) entity).getMaxHealth()) * 1000) / (double) 10;
+                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * 1000) / (double) 10;
                                     display = display.replace("{Health_Percentage_1DB}", String.valueOf(health));
                                 }
                                 if (display.contains("{Health_Percentage_2DB}")) {
-                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / (double) ((LivingEntity) entity).getMaxHealth()) * 10000) / (double) 10;
+                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * 10000) / (double) 10;
                                     display = display.replace("{Health_Percentage_2DB}", String.valueOf(health));
                                 }
                                 if (display.contains("{Mob_Type}")) {
@@ -423,7 +409,7 @@ public class HoloMobHealth extends JavaPlugin {
                                 }
                                 if (display.contains("{DynamicColor}")) {
                                     double healthpercentage = (((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth());
-                                    String symbol = "";
+                                    String symbol;
                                     if (healthpercentage < 0.33) {
                                         symbol = HoloMobHealth.LowColor;
                                     } else if (healthpercentage < 0.67) {
@@ -434,24 +420,24 @@ public class HoloMobHealth extends JavaPlugin {
                                     display = display.replace("{DynamicColor}", symbol);
                                 }
                                 if (display.contains("{ScaledSymbols}")) {
-                                    String symbol = "";
+                                    StringBuilder symbol = new StringBuilder();
                                     double healthpercentagescaled = (((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * (double) HoloMobHealth.heartScale;
-                                    double i = 1;
+                                    double i;
                                     for (i = 1; i < healthpercentagescaled; i = i + 1) {
-                                        symbol = symbol + HoloMobHealth.HealthyChar;
+                                        symbol.append(HoloMobHealth.HealthyChar);
                                     }
                                     i = i - 1;
                                     if ((healthpercentagescaled - i) > 0 && (healthpercentagescaled - i) < 0.33) {
-                                        symbol = symbol + HoloMobHealth.EmptyChar;
+                                        symbol.append(HoloMobHealth.EmptyChar);
                                     } else if ((healthpercentagescaled - i) > 0 && (healthpercentagescaled - i) < 0.67) {
-                                        symbol = symbol + HoloMobHealth.HalfChar;
+                                        symbol.append(HoloMobHealth.HalfChar);
                                     } else if ((healthpercentagescaled - i) > 0) {
-                                        symbol = symbol + HoloMobHealth.HealthyChar;
+                                        symbol.append(HoloMobHealth.HealthyChar);
                                     }
                                     for (i = HoloMobHealth.heartScale - 1; i >= healthpercentagescaled; i = i - 1) {
-                                        symbol = symbol + HoloMobHealth.EmptyChar;
+                                        symbol.append(HoloMobHealth.EmptyChar);
                                     }
-                                    display = display.replace("{ScaledSymbols}", symbol);
+                                    display = display.replace("{ScaledSymbols}", symbol.toString());
                                 }
 
                                 display = ChatColor.translateAlternateColorCodes('&', display);
@@ -464,7 +450,7 @@ public class HoloMobHealth extends JavaPlugin {
                                     if (name.equals("")) {
                                         name = ChatColor.translateAlternateColorCodes('&', EntityTypeUtils.getMinecraftName(entity));
                                     }
-                                    display = display.replace("{Mob_Type_Or_Name}", String.valueOf(name));
+                                    display = display.replace("{Mob_Type_Or_Name}", name);
                                 }
                                 MetadataPacket.sendMetadataPacket(entity, display, HoloMobHealth.alwaysShow);
                             }
@@ -493,19 +479,19 @@ public class HoloMobHealth extends JavaPlugin {
 
                     new BukkitRunnable() {
                         public void run() {
-                            if (entity.isValid() == false) {
+                            if (!entity.isValid()) {
                                 return;
                             }
 
                             if (HoloMobHealth.DisabledMobTypes.contains(entity.getType())) {
                                 return;
                             }
-                            if (showCitizens == false && CitizensHook == true) {
+                            if (!showCitizens && CitizensHook) {
                                 if (CitizensUtils.isNPC(entity)) {
                                     return;
                                 }
                             }
-                            if (showMythicMobs == false && MythicHook == true) {
+                            if (!showMythicMobs && MythicHook) {
                                 if (MythicMobsUtils.isMythicMob(entity)) {
                                     return;
                                 }
@@ -525,7 +511,7 @@ public class HoloMobHealth extends JavaPlugin {
                                             break;
                                         }
                                     }
-                                    if (contain == true) {
+                                    if (contain) {
                                         return;
                                     }
                                 }
@@ -537,7 +523,7 @@ public class HoloMobHealth extends JavaPlugin {
                                     MetadataPacket.sendMetadataPacket(entity, name, visible);
                                     return;
                                 }
-                                if (HoloMobHealth.applyToNamed == false) {
+                                if (!HoloMobHealth.applyToNamed) {
                                     if (entity.getCustomName() != null) {
                                         if (!entity.getCustomName().equals("")) {
                                             String name = entity.getCustomName();
@@ -547,7 +533,7 @@ public class HoloMobHealth extends JavaPlugin {
                                         }
                                     }
                                 }
-                                String display = "";
+                                String display;
                                 display = HoloMobHealth.DisplayText;
                                 if (display.contains("{Health_Rounded}")) {
                                     long health = Math.round(((LivingEntity) entity).getHealth());
@@ -574,15 +560,15 @@ public class HoloMobHealth extends JavaPlugin {
                                     display = display.replace("{Max_Health_2DB}", String.valueOf(health));
                                 }
                                 if (display.contains("{Health_Percentage}")) {
-                                    long health = Math.round((((LivingEntity) entity).getHealth() / (double) ((LivingEntity) entity).getMaxHealth()) * 100);
+                                    long health = Math.round((((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * 100);
                                     display = display.replace("{Health_Percentage}", String.valueOf(health));
                                 }
                                 if (display.contains("{Health_Percentage_1DB}")) {
-                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / (double) ((LivingEntity) entity).getMaxHealth()) * 1000) / (double) 10;
+                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * 1000) / (double) 10;
                                     display = display.replace("{Health_Percentage_1DB}", String.valueOf(health));
                                 }
                                 if (display.contains("{Health_Percentage_2DB}")) {
-                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / (double) ((LivingEntity) entity).getMaxHealth()) * 10000) / (double) 10;
+                                    double health = (double) Math.round((((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * 10000) / (double) 10;
                                     display = display.replace("{Health_Percentage_2DB}", String.valueOf(health));
                                 }
                                 if (display.contains("{Mob_Type}")) {
@@ -591,7 +577,7 @@ public class HoloMobHealth extends JavaPlugin {
                                 }
                                 if (display.contains("{DynamicColor}")) {
                                     double healthpercentage = (((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth());
-                                    String symbol = "";
+                                    String symbol;
                                     if (healthpercentage < 0.33) {
                                         symbol = HoloMobHealth.LowColor;
                                     } else if (healthpercentage < 0.67) {
@@ -602,24 +588,24 @@ public class HoloMobHealth extends JavaPlugin {
                                     display = display.replace("{DynamicColor}", symbol);
                                 }
                                 if (display.contains("{ScaledSymbols}")) {
-                                    String symbol = "";
+                                    StringBuilder symbol = new StringBuilder();
                                     double healthpercentagescaled = (((LivingEntity) entity).getHealth() / ((LivingEntity) entity).getMaxHealth()) * (double) HoloMobHealth.heartScale;
-                                    double i = 1;
+                                    double i;
                                     for (i = 1; i < healthpercentagescaled; i = i + 1) {
-                                        symbol = symbol + HoloMobHealth.HealthyChar;
+                                        symbol.append(HoloMobHealth.HealthyChar);
                                     }
                                     i = i - 1;
                                     if ((healthpercentagescaled - i) > 0 && (healthpercentagescaled - i) < 0.33) {
-                                        symbol = symbol + HoloMobHealth.EmptyChar;
+                                        symbol.append(HoloMobHealth.EmptyChar);
                                     } else if ((healthpercentagescaled - i) > 0 && (healthpercentagescaled - i) < 0.67) {
-                                        symbol = symbol + HoloMobHealth.HalfChar;
+                                        symbol.append(HoloMobHealth.HalfChar);
                                     } else if ((healthpercentagescaled - i) > 0) {
-                                        symbol = symbol + HoloMobHealth.HealthyChar;
+                                        symbol.append(HoloMobHealth.HealthyChar);
                                     }
                                     for (i = HoloMobHealth.heartScale - 1; i >= healthpercentagescaled; i = i - 1) {
-                                        symbol = symbol + HoloMobHealth.EmptyChar;
+                                        symbol.append(HoloMobHealth.EmptyChar);
                                     }
-                                    display = display.replace("{ScaledSymbols}", symbol);
+                                    display = display.replace("{ScaledSymbols}", symbol.toString());
                                 }
 
                                 display = ChatColor.translateAlternateColorCodes('&', display);
@@ -632,7 +618,7 @@ public class HoloMobHealth extends JavaPlugin {
                                     if (name.equals("")) {
                                         name = ChatColor.translateAlternateColorCodes('&', EntityTypeUtils.getMinecraftName(entity));
                                     }
-                                    display = display.replace("{Mob_Type_Or_Name}", String.valueOf(name));
+                                    display = display.replace("{Mob_Type_Or_Name}", name);
                                 }
                                 MetadataPacket.sendMetadataPacket(entity, display, HoloMobHealth.alwaysShow);
                             }

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -19,9 +20,8 @@ import com.loohp.holomobhealth.HoloMobHealth;
 public class LegacyEntityTypeUtils {
 
     private static File file;
-    private static JSONObject json;
-    private static JSONParser parser = new JSONParser();
-    private static HashMap<Short, String> entry = new HashMap<Short, String>();
+    private static final JSONParser parser = new JSONParser();
+    private static final Map<Short, String> entry = new HashMap<>();
 
     @SuppressWarnings("deprecation")
     public static String getLegacyMinecraftName(Entity entity) {
@@ -43,8 +43,8 @@ public class LegacyEntityTypeUtils {
 
         JSONArray each = (JSONArray) obj;
 
-        for (int i = 0; i < each.size(); i++) {
-            json = (JSONObject) each.get(i);
+        for (Object o : each) {
+            JSONObject json = (JSONObject) o;
             if (!json.containsKey("internalId")) {
                 continue;
             }

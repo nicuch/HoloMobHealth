@@ -1,8 +1,10 @@
 package com.loohp.holomobhealth.Updater;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Version implements Comparable<Version> {
 
-    private String version;
+    private final String version;
 
     public final String get() {
         return this.version;
@@ -17,7 +19,7 @@ public class Version implements Comparable<Version> {
     }
 
     @Override
-    public int compareTo(Version that) {
+    public int compareTo(@NotNull Version that) {
         if (that == null)
             return 1;
         String[] thisParts = this.get().split("\\.");

@@ -5,11 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,10 +25,10 @@ public class EntityTypeUtils {
 
     private static File file;
     private static JSONObject json;
-    private static JSONParser parser = new JSONParser();
-    private static HashMap<String, String> entry = new HashMap<String, String>();
+    private static final JSONParser parser = new JSONParser();
+    private static Map<String, String> entry = new HashMap<>();
 
-    private static List<EntityType> MobTypesList = new ArrayList<EntityType>();
+    private static final List<EntityType> MobTypesList = new ArrayList<>();
 
     public static List<EntityType> getMobList() {
         return MobTypesList;
@@ -55,25 +53,24 @@ public class EntityTypeUtils {
         }
 
         EntityType type = entity.getType();
-        String path = "";
+        String path;
         if (HoloMobHealth.version.equals("1.13") || HoloMobHealth.version.contentEquals("1.13.1")) {
-            path = new StringBuilder().append("entity.minecraft.").append(type.name().toLowerCase()).toString();
+            path = "entity.minecraft." + type.name().toLowerCase();
             if (type.equals(EntityType.PIG_ZOMBIE)) {
-                path = new StringBuilder().append("entity.minecraft.zombie_pigman").toString();
+                path = "entity.minecraft.zombie_pigman";
             }
         } else {
-            path = new StringBuilder().append("entity.").append(type.getKey().getNamespace()).append('.').append(type.getKey().getKey()).toString();
+            path = "entity." + type.getKey().getNamespace() + '.' + type.getKey().getKey();
         }
 
         path = TropicalFishUtils.addTropicalFishType(entity, path);
 
         if (type.equals(EntityType.VILLAGER)) {
             Villager villager = (Villager) entity;
-            path = new StringBuilder().append(path).append(".").append(villager.getProfession().toString().toLowerCase()).toString();
+            path = path + "." + villager.getProfession().toString().toLowerCase();
         }
 
-        String name = json.containsKey(path) ? json.get(path).toString() : (entry.containsKey(path) ? entry.get(path).toString() : path);
-        return name;
+        return json.containsKey(path) ? json.get(path).toString() : (entry.getOrDefault(path, path));
     }
 
     public static void reloadLang() {
@@ -82,7 +79,7 @@ public class EntityTypeUtils {
             return;
         }
         try {
-            json = (JSONObject) parser.parse(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            json = (JSONObject) parser.parse(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
             @SuppressWarnings("unchecked")
             HashMap<String, String> HashMap = new Gson().fromJson(json.toString(), HashMap.class);
             entry = HashMap;
@@ -92,20 +89,25 @@ public class EntityTypeUtils {
     }
 
     public static void setupLang() {
-        String langVersion = "";
+        String langVersion;
 
-        if (HoloMobHealth.version.equals("1.15")) {
-            langVersion = "V1_15";
-        } else if (HoloMobHealth.version.equals("1.14")) {
-            langVersion = "V1_14";
-        } else if (HoloMobHealth.version.equals("1.13.1") || HoloMobHealth.version.equals("1.13")) {
-            langVersion = "V1_13";
-        } else {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "JSON custom language files are not supported on this version");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "HoloMobHealth will use legacy EntityType names method instead!");
-            file = null;
-            LegacyEntityTypeUtils.setupLegacyLang();
-            return;
+        switch (HoloMobHealth.version) {
+            case "1.15":
+                langVersion = "V1_15";
+                break;
+            case "1.14":
+                langVersion = "V1_14";
+                break;
+            case "1.13.1":
+            case "1.13":
+                langVersion = "V1_13";
+                break;
+            default:
+                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "JSON custom language files are not supported on this version");
+                Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "HoloMobHealth will use legacy EntityType names method instead!");
+                file = null;
+                LegacyEntityTypeUtils.setupLegacyLang();
+                return;
         }
 
         if (!HoloMobHealth.plugin.getDataFolder().exists()) {

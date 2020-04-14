@@ -16,11 +16,12 @@ import com.loohp.holomobhealth.Updater.Updater;
 import com.loohp.holomobhealth.Utils.EntityTypeUtils;
 
 import net.md_5.bungee.api.ChatColor;
+import org.jetbrains.annotations.NotNull;
 
 public class Commands implements CommandExecutor, TabCompleter {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, String label, @NotNull String[] args) {
         if (!label.equalsIgnoreCase("holomobhealth") && !label.equalsIgnoreCase("hmh")) {
             return true;
         }
@@ -82,8 +83,8 @@ public class Commands implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        List<String> tab = new ArrayList<String>();
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, String label, @NotNull String[] args) {
+        List<String> tab = new ArrayList<>();
         if (!label.equalsIgnoreCase("holomobhealth") && !label.equalsIgnoreCase("hmh")) {
             return tab;
         }
